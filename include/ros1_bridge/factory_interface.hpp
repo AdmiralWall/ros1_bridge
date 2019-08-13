@@ -16,7 +16,8 @@
 #define  ROS1_BRIDGE__FACTORY_INTERFACE_HPP_
 
 #include <string>
-
+#include <actionlib/server/action_server.h>
+#include <actionlib/client/action_client.h>
 // include ROS 1
 #include "ros/node_handle.h"
 #include "ros/publisher.h"
@@ -26,6 +27,8 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/subscription.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include <rclcpp_action/rclcpp_action.hpp>
 
 namespace ros1_bridge
 {
@@ -33,13 +36,27 @@ namespace ros1_bridge
 struct ServiceBridge1to2
 {
   ros::ServiceServer server;
-  rclcpp::ClientBase::SharedPtr client;
+  rclcpp::ClientBase::SharedPtr client; //ROS2
 };
 
 struct ServiceBridge2to1
 {
-  rclcpp::ServiceBase::SharedPtr server;
+  rclcpp::ServiceBase::SharedPtr server;  //ROS2
   ros::ServiceClient client;
+};
+
+struct ActionBridge1to2
+{
+    actionlib::ActionServer action_server;
+    rclcpp_action::ClientBase::SharedPtr action_client; //calling constructor of rclcpp_action::ClientBase
+    //rclcpp_action::create_client(ros2_node, action_name);
+};
+
+struct ActionBridge2to1
+{
+    //rclcpp_action::ServerBase::SharedPtr action_server;
+    rclcpp_action::create_server(ros2_node, action_name);
+    actionlib::ActionClient action_client;
 };
 
 class FactoryInterface

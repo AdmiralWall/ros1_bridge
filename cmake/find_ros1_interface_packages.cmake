@@ -37,7 +37,7 @@ function(find_ros1_interface_packages var)
   endif()
   set(ENV{PYTHONPATH} "${PYTHONPATH_WITHOUT_ROS2}")
 
-  # find all known ROS1 message/service packages
+  # find all known ROS1 message/service/action packages
   execute_process(
       COMMAND "rosmsg" "list"
       OUTPUT_VARIABLE rosmsg_output
@@ -48,6 +48,12 @@ function(find_ros1_interface_packages var)
       OUTPUT_VARIABLE rossrv_output
       ERROR_VARIABLE rossrv_error
   )
+
+execute_process(
+    COMMAND "rossrv" "list"
+    OUTPUT_VARIABLE rosaction_output #change to goal?
+    ERROR_VARIABLE rosaction_error
+    )
 
   # restore PYTHONPATH
   set(ENV{PYTHONPATH} ${PYTHONPATH})

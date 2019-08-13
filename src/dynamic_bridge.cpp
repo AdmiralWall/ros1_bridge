@@ -112,6 +112,15 @@ bool parse_command_options(
     } else {
       printf("No service type conversion pairs supported.\n");
     }
+    mappings_2to1 = ros1_bridge::get_all_action_mappings_2to1();
+    if (mappings_2to1.size() > 0) {
+      printf("Supported ROS 2 <=> ROS 1 action type conversion pairs:\n");
+      for (auto & pair : mappings_2to1) {
+        printf("  - '%s' (ROS 2) <=> '%s' (ROS 1)\n", pair.first.c_str(), pair.second.c_str());
+      }
+    } else {
+      printf("No action type conversion pairs supported.\n");
+    }
     return false;
   }
 
@@ -131,6 +140,10 @@ void update_bridge(
   const std::map<std::string, std::string> & ros1_subscribers,
   const std::map<std::string, std::string> & ros2_publishers,
   const std::map<std::string, std::string> & ros2_subscribers,
+ // const std::map<std::string, std::string> & ros1_action_clients,
+  const std::map<std::string, std::string> & ros1_actions,
+  //const std::map<std::string, std::string> & ros2_action_clients,
+  const std::map<std::string, std::string> & ros2_actions,
   const std::map<std::string, std::map<std::string, std::string>> & ros1_services,
   const std::map<std::string, std::map<std::string, std::string>> & ros2_services,
   std::map<std::string, Bridge1to2HandlesAndMessageTypes> & bridges_1to2,
@@ -339,6 +352,29 @@ void update_bridge(
           printf("Created 1 to 2 bridge for service %s\n", name.data());
         } catch (std::runtime_error & e) {
           fprintf(stderr, "Failed to created a bridge: %s\n", e.what());
+        }
+      }
+    }
+  }
+
+  //create bridges for ros1 actions
+  for (auto & action : ros1_actions)
+  {
+      auto & name = action.first;
+      auto & details = action.second;
+      if (
+        action_bridges_2_to_1.find(name) == action_bridges_2_to_1.end() &&
+        action_bridges_1_to_2.find(name) == action_bridges_1_to_2.end())
+      {
+        auto factory = ros1_bridge::get_action_factory(
+          "ros1", details.at("package"), details.at("name"));
+        if (factory) {
+          try {
+            action_bridges_2_to_1[name] = factory->action_bridge_2_to_1(ros1_node, ros2_node, name);
+            printf("Created 2 to 1 bridge for action %s\n", name.data());
+          } catch (std::runtime_error & e) {
+            fprintf(stderr, "Failed to created a bridge: %s\n", e.what());
+          }
         }
       }
     }

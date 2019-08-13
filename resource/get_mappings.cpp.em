@@ -89,4 +89,17 @@ get_all_service_mappings_2to1()
   return mappings;
 }
 
+std::map<std::string, std::string> get_all_action_mappings_2to1()
+{
+    static std::map<std::string, std::string> mappings = {
+        @[for a in actions]@
+        {//ros2 action list
+            "@(a['ros2_package'])/action/@(a['ros2_action_name'])", //ROS 2
+            "@(a['ros1_package'])/@(a['ros1_action_name'])" //ROS 1
+        },
+        @[end for]@
+    };
+    return mappings;
+}
+
 }  // namespace ros1_bridge
